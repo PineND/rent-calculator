@@ -1,0 +1,34 @@
+target_semester_income: 48000
+months_per_semester: 5
+
+room_rates:
+  single: 1000
+  double: 800
+
+rooms:
+  1: double
+  2: double
+  3: double
+  4: single
+  5: double
+  6: single
+  7: single
+
+tenants:
+  1:
+    - Thompson
+    - Charles
+  2:
+    - Manny
+  3:
+    - Pine
+    - JP
+  4:
+    - Eddie
+  5:
+    - Arquime
+    - Nathan
+  6:
+    - Richard
+  7:
+    - Alex
