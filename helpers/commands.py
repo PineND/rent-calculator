@@ -35,6 +35,11 @@ def parse_command(cmd, tenant_names):
     if cmd_lower == "help":
         return ("help",)
 
+    # Check for fixed rent syntax: "name =amount"
+    fixed = parse_fixed(cmd, tenant_names)
+    if fixed:
+        return fixed
+
     parts = cmd.split()
 
     # Handle "view <rent/config>"
@@ -70,10 +75,33 @@ def parse_command(cmd, tenant_names):
     if name_key == "target":
         return ("target", amount)
 
-    if name_key in config.ROOM_RATES:
+    if name_key in config.STANDARD_RATES:
         return ("rate", name_key, amount)
 
     if name_key in tenant_names:
         return ("tenant", tenant_names[name_key], amount)
 
     return ("error", f"Unknown: {name_input}")
+
+
+def parse_fixed(cmd, tenant_names):
+    """Parse 'name =amount' command. Returns (name, amount) or None."""
+    if "=" not in cmd:
+        return None
+
+    parts = cmd.split("=")
+    if len(parts) != 2:
+        return None
+
+    name_input = parts[0].strip().lower()
+    amount_str = parts[1].strip()
+
+    if name_input not in tenant_names:
+        return ("error", f"Unknown: {name_input}")
+
+    try:
+        amount = int(amount_str)
+    except ValueError:
+        return ("error", f"Invalid amount: {amount_str}")
+
+    return ("fixed", tenant_names[name_input], amount)

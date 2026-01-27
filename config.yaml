@@ -1,18 +1,26 @@
-target_semester_income: 48000
+target_semester_income: 47750
 months_per_semester: 5
 
-room_rates:
-  single: 1000
-  double: 800
+standard_rates:
+  single: 1005
+  double: 805
 
 rooms:
-  1: double
-  2: double
-  3: double
-  4: single
-  5: double
-  6: single
-  7: single
+  1:
+    type: double
+  2:
+    type: double
+  3:
+    type: double
+  4:
+    type: single
+  5:
+    type: double
+  6:
+    type: single
+  7:
+    type: single
+    custom_rate: 1105
 
 tenants:
   1:
@@ -20,6 +28,7 @@ tenants:
     - Charles
   2:
     - Manny
+    - Bryan
   3:
     - Pine
     - JP
