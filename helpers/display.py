@@ -16,24 +16,29 @@ def render_table(data):
     table.add_column("Base", justify="right")
     table.add_column("Adj", justify="right")
     table.add_column("Monthly", justify="right")
-    table.add_column("Suggested", justify="right")
-    table.add_column("Sem Delta", justify="right")
     table.add_column("Semester", justify="right")
+    table.add_column("Sem Delta", justify="right")
+    table.add_column("Suggested", justify="right")
 
     for r in data["rents"]:
-        adj_str = f"{r['adj']:+d}" if r['adj'] else "0"
-        name_display = f"{r['name']}*" if r["fixed"] else r["name"]
-        suggested_display = f"${r['suggested']}" if not r["fixed"] else f"[bold]${r['suggested']}[/bold]"
+        if r["fixed"]:
+            adj_str = "[dim]Fixed[/dim]"
+            suggested_display = "[dim][fixed][/dim]"
+            base_display = f"[bold]${r['base']}[/bold]"
+        else:
+            adj_str = f"{r['adj']:+d}" if r['adj'] else "0"
+            suggested_display = f"${r['suggested']:.2f}"
+            base_display = f"${r['base']}"
         table.add_row(
             str(r["room"]),
-            name_display,
+            r["name"],
             r["type"],
-            f"${r['base']}",
+            base_display,
             adj_str,
             f"${r['monthly']}",
+            f"${r['semester']:.2f}",
+            f"${r['delta']:+.2f}",
             suggested_display,
-            f"${r['delta']:+.0f}",
-            f"${r['semester']}",
         )
 
     # Summary rows
@@ -41,32 +46,39 @@ def render_table(data):
     table.add_row(
         "", "", "", "", "TOTAL",
         f"${data['total_monthly']}",
-        f"${data['suggested_monthly']}",
+        f"${data['total_semester']:.2f}",
         "",
-        f"${data['suggested_semester']}",
+        f"${data['suggested_monthly']:.2f}",
         style="bold"
     )
 
     target_label = f"TARGET ({data['target_adj']:+d})" if data['target_adj'] else "TARGET"
-    table.add_row("", "", "", "", target_label, "", "", "", f"${data['target_semester']}")
+    table.add_row("", "", "", "", target_label, "", f"${data['target_semester']:.2f}", "", "")
 
-    above_style = "green" if data['suggested_above'] >= 0 else "red"
+    above_value = data['total_semester'] - data['target_semester']
+    above_style = "green" if above_value >= 0 else "red"
+    above_label = "ABOVE" if above_value >= 0 else "BELOW"
     table.add_row(
-        "", "", "", "", "ABOVE",
-        "", "", "",
-        f"${data['suggested_above']:+.0f}",
+        "", "", "", "", above_label,
+        "",
+        f"${above_value:+.2f}",
+        "", "",
         style=above_style,
         end_section=True
     )
 
     console.print(table)
 
+    # Show warning if fixed rents exceed target
+    if data.get("fixed_exceeds_target"):
+        console.print("[bold red]Warning: Fixed rents exceed target! Suggested rents may be inaccurate.[/bold red]")
+
 
 def print_help():
     """Print help commands."""
     console.print("[yellow]Commands:[/yellow]")
     console.print("  [dim]<name> <+/-amount>[/dim]   Adjust person's rent (e.g. pine +50)")
-    console.print("  [dim]<name> =<amount>[/dim]     Fix person's rent (e.g. manny =600)")
+    console.print("  [dim]<name> =<amount>[/dim]     Fix person's rent (e.g. pine =800)")
     console.print("  [dim]single/double <+/-n>[/dim] Adjust room type rate (e.g. double +20)")
     console.print("  [dim]room <n> <+/-amount>[/dim] Adjust specific room (e.g. room 1 +100)")
     console.print("  [dim]target <+/-amount>[/dim]   Adjust semester target")
